@@ -1,0 +1,10 @@
+# Genereres af `xcodegen generate`
+DanskSvar.xcodeproj/
+# Genereres af XcodeGen ud fra project.yml
+Support/Info.plist
+
+.DS_Store
+xcuserdata/
+*.xcworkspace/xcuserdata/
+build/
+DerivedData/
