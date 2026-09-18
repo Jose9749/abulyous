@@ -8,7 +8,7 @@ options:
 
 settings:
   base:
-    SWIFT_VERSION: "5.9"
+    SWIFT_VERSION: "5.0"
     CODE_SIGN_STYLE: Automatic
     # Sæt dit eget Apple-team-ID her (Xcode > Settings > Accounts), eller vælg
     # teamet i Signing & Capabilities efter at projektet er genereret.
@@ -51,3 +51,13 @@ targets:
         NSSpeechRecognitionUsageDescription: >-
           DanskSvar omsætter dansk tale til tekst, så appen kan finde den røde tråd
           i samtalen og formulere et skriftligt svar til din låseskærm.
+
+schemes:
+  DanskSvar:
+    build:
+      targets:
+        DanskSvar: all
+    run:
+      config: Debug
+    archive:
+      config: Release
