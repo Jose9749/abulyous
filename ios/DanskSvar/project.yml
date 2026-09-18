@@ -40,6 +40,9 @@ targets:
         UILaunchScreen: {}
         UIApplicationSupportsIndirectInputEvents: true
         UIRequiredDeviceCapabilities: [arm64, microphone]
+        # Appen er kun til iPhone og kun stående. Uden UIRequiresFullScreen
+        # klager Xcode over, at ikke alle skærmretninger understøttes.
+        UIRequiresFullScreen: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         # Holder lydsessionen i live, når appen er i baggrunden eller telefonen er låst.
