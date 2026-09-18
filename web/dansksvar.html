@@ -1,0 +1,966 @@
+<title>DanskSvar</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --ground:   #E3E6E9;
+    --surface:  #FFFFFF;
+    --raised:   #F4F6F7;
+    --ink:      #171C21;
+    --muted:    #5C6975;
+    --faint:    #8A97A2;
+    --line:     #C9D0D6;
+    --thread:   #B8413A;
+    --thread-2: #D9615A;
+    --live:     #2F7F62;
+    --wait:     #9A6D1C;
+    --radius:   14px;
+    --ui: "Familjen Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --prose: "Source Serif 4", Georgia, "Times New Roman", serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0E1317;
+      --surface:  #171E24;
+      --raised:   #1F272E;
+      --ink:      #E3E9ED;
+      --muted:    #8A98A4;
+      --faint:    #64717C;
+      --line:     #29333B;
+      --thread:   #DD6A61;
+      --thread-2: #F08A80;
+      --live:     #4FAF87;
+      --wait:     #C79640;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:   #0E1317;
+    --surface:  #171E24;
+    --raised:   #1F272E;
+    --ink:      #E3E9ED;
+    --muted:    #8A98A4;
+    --faint:    #64717C;
+    --line:     #29333B;
+    --thread:   #DD6A61;
+    --thread-2: #F08A80;
+    --live:     #4FAF87;
+    --wait:     #C79640;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--ground); }
+  body {
+    font-family: var(--ui);
+    color: var(--ink);
+    padding-inline: 16px;
+    padding-block: 20px 56px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ---- Sidehoved ---- */
+  .masthead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .wordmark { font-size: 21px; font-weight: 700; letter-spacing: -0.015em; margin: 0; }
+  .wordmark span { color: var(--thread); }
+  .tagline { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.35; max-width: 175px; }
+
+  /* ---- Statuspanel ---- */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .statusline { display: flex; align-items: center; gap: 9px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); flex: none; }
+  .dot.live { background: var(--live); animation: pulse 1.9s ease-in-out infinite; }
+  .dot.busy { background: var(--thread); animation: pulse 1s ease-in-out infinite; }
+  .dot.bad  { background: var(--thread); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.32; } }
+  @media (prefers-reduced-motion: reduce) { .dot.live, .dot.busy { animation: none; } }
+  .status-text { font-size: 14px; font-weight: 500; }
+  .countdown {
+    margin-left: auto; font-size: 12px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Den røde tråd: en faktisk tråd ---- */
+  .thread-block { display: flex; flex-direction: column; gap: 7px; }
+  .thread-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .thread-topic { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .thread-topic.empty { color: var(--faint); font-weight: 400; font-style: italic; }
+  .thread-pct { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+  .thread-rail { position: relative; height: 3px; background: var(--line); border-radius: 2px; overflow: visible; }
+  .thread-fill {
+    position: absolute; inset: 0 auto 0 0; width: 0%;
+    background: linear-gradient(90deg, var(--thread), var(--thread-2));
+    border-radius: 2px;
+    transition: width 420ms cubic-bezier(.4,0,.2,1);
+  }
+  .thread-mark {
+    position: absolute; top: -3px; width: 1px; height: 9px;
+    background: var(--muted); opacity: 0.75;
+  }
+  .thread-meta { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  /* ---- Knapper ---- */
+  .btn {
+    font-family: var(--ui); font-size: 15px; font-weight: 600;
+    border-radius: 10px; border: 1px solid transparent;
+    padding: 12px 16px; cursor: pointer; width: 100%;
+    background: var(--thread); color: #fff;
+    transition: filter 140ms ease;
+  }
+  .btn:hover { filter: brightness(1.07); }
+  .btn.stop { background: var(--raised); color: var(--ink); border-color: var(--line); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn:focus-visible, .ghost:focus-visible, summary:focus-visible { outline: 2px solid var(--thread-2); outline-offset: 2px; }
+  .ghost {
+    font-family: var(--ui); font-size: 12px; font-weight: 500;
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; padding: 4px 0; text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* ---- Svarkortet ---- */
+  .reply {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--thread);
+    border-radius: var(--radius);
+    padding: 15px 16px;
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .reply.fresh { animation: arrive 520ms cubic-bezier(.2,.7,.3,1); }
+  @keyframes arrive { from { opacity: 0; transform: translateY(-7px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .reply.fresh { animation: none; } }
+  .reply-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .reply-topic { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .reply-time { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; flex: none; }
+  .reply-body {
+    font-family: var(--prose); font-size: 17px; line-height: 1.5;
+    color: var(--ink); margin: 0;
+  }
+  .reply-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .chip {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--muted); border: 1px solid var(--line); border-radius: 99px;
+    padding: 3px 8px;
+  }
+  .chip.example { color: var(--wait); border-color: var(--wait); }
+
+  /* ---- Transskription ---- */
+  .ticker { display: flex; flex-direction: column; gap: 5px; }
+  .ticker-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--faint);
+  }
+  .ticker-text {
+    font-family: var(--prose); font-size: 14px; line-height: 1.45; color: var(--muted);
+    min-height: 1.45em;
+  }
+
+  /* ---- Historik og indstillinger ---- */
+  details {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  summary {
+    padding: 13px 15px; cursor: pointer; font-size: 14px; font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .count { font-size: 12px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .details-body { padding: 0 15px 15px; display: flex; flex-direction: column; gap: 14px; }
+
+  .hist-item { border-top: 1px solid var(--line); padding-top: 11px; display: flex; flex-direction: column; gap: 5px; }
+  .hist-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .hist-topic { font-size: 13px; font-weight: 600; }
+  .hist-time { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; flex: none; }
+  .hist-body { font-family: var(--prose); font-size: 14.5px; line-height: 1.45; color: var(--muted); margin: 0; }
+  .empty-note { font-size: 13px; color: var(--faint); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .field label { font-size: 13px; font-weight: 500; }
+  .field .val { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+  .field .hint { font-size: 11.5px; color: var(--faint); line-height: 1.4; }
+  input[type="range"] { width: 100%; accent-color: var(--thread); }
+  select, textarea {
+    font-family: var(--ui); font-size: 14px; color: var(--ink);
+    background: var(--raised); border: 1px solid var(--line);
+    border-radius: 8px; padding: 9px 10px; width: 100%;
+  }
+  textarea { font-family: var(--prose); min-height: 66px; resize: vertical; }
+
+  /* ---- Forbehold ---- */
+  .caveat {
+    background: var(--raised); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 14px 15px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .caveat h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--thread); margin: 0;
+  }
+  .caveat p { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin: 0; }
+  .caveat strong { color: var(--ink); font-weight: 600; }
+
+  .alert {
+    border: 1px solid var(--thread); border-radius: 10px;
+    padding: 11px 13px; font-size: 12.5px; line-height: 1.45; color: var(--ink);
+    background: color-mix(in srgb, var(--thread) 9%, var(--surface));
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <h1 class="wordmark">Dansk<span>Svar</span></h1>
+    <p class="tagline">Lytter efter dansk tale og skriver svaret for dig</p>
+  </header>
+
+  <div id="alert" class="alert" hidden></div>
+
+  <section class="panel">
+    <div class="statusline">
+      <span class="dot" id="dot"></span>
+      <span class="status-text" id="statusText">Slukket</span>
+      <span class="countdown" id="countdown"></span>
+    </div>
+
+    <div class="thread-block">
+      <div class="thread-head">
+        <span class="thread-topic empty" id="threadTopic">Ingen tråd endnu</span>
+        <span class="thread-pct" id="threadPct"></span>
+      </div>
+      <div class="thread-rail">
+        <div class="thread-fill" id="threadFill"></div>
+        <div class="thread-mark" id="threadMark" style="left: 32%"></div>
+      </div>
+      <div class="thread-meta" id="threadMeta">Mærket viser, hvor stram tråden skal være, før der svares.</div>
+    </div>
+
+    <button class="btn" id="toggle">Start lytning</button>
+
+    <div class="ticker">
+      <span class="ticker-label">Høres nu &middot; vises kun her</span>
+      <div class="ticker-text" id="ticker">—</div>
+    </div>
+  </section>
+
+  <section id="replySlot"></section>
+
+  <details id="histPanel">
+    <summary>Historik <span class="count" id="histCount">0 svar</span></summary>
+    <div class="details-body" id="histBody">
+      <p class="empty-note">Her samler de svar sig, som har været vist.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Indstillinger</summary>
+    <div class="details-body">
+      <div class="field">
+        <div class="field-head"><label for="sInterval">Mindst mellem svar</label><span class="val" id="vInterval"></span></div>
+        <input type="range" id="sInterval" min="30" max="300" step="10">
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="sSettle">Pause i talen, før der svares</label><span class="val" id="vSettle"></span></div>
+        <input type="range" id="sSettle" min="2" max="20" step="1">
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="sGrace">Pusterum efter emneskift</label><span class="val" id="vGrace"></span></div>
+        <input type="range" id="sGrace" min="0" max="90" step="5">
+        <span class="hint">Skifter samtalen emne, venter appen, så det nye emne når at folde sig ud.</span>
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="sWords">Mindst antal ord i emnet</label><span class="val" id="vWords"></span></div>
+        <input type="range" id="sWords" min="10" max="120" step="5">
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="sCoh">Krav til rød tråd</label><span class="val" id="vCoh"></span></div>
+        <input type="range" id="sCoh" min="5" max="45" step="1">
+        <span class="hint">Hæver du kravet, svarer appen sjældnere, men kun når emnet er tydeligt.</span>
+      </div>
+      <div class="field">
+        <label for="sLength">Svarets længde</label>
+        <select id="sLength">
+          <option value="kort">Kort &middot; 1–2 sætninger</option>
+          <option value="mellem">Mellem &middot; 2–4 sætninger</option>
+          <option value="lang">Fyldigt &middot; 3–5 sætninger</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sPersona">Om dig</label>
+        <textarea id="sPersona" placeholder="Et par linjer om, hvem du er, og hvordan du plejer at udtrykke dig."></textarea>
+        <span class="hint">Modellen skriver dansk under alle omstændigheder — det her gør bare svaret til dit.</span>
+      </div>
+      <button class="ghost" id="clearHist" type="button">Slet hele historikken</button>
+    </div>
+  </details>
+
+  <section class="caveat">
+    <h2>Hvad browseren ikke kan</h2>
+    <p>Safari lytter <strong>kun mens denne side er åben og fremme på skærmen</strong>. Låser du telefonen eller skifter app, standser lytningen. Appen holder skærmen vågen, så længe den lytter.</p>
+    <p>Der kommer <strong>ingen notifikation på låseskærmen</strong>. En webside på iPhone har ikke adgang til at lægge noget dér. Svaret vises her på siden i stedet. Skal det på låseskærmen, kræver det den native app.</p>
+    <p>Mikrofonen kan ikke undværes, og Safari viser et mikrofonmærke i adresselinjen, mens der lyttes. Husk, at det kun er lovligt at optage samtaler, du selv deltager i.</p>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ========== Indstillinger ========== */
+
+  var DEFAULTS = {
+    interval: 90,      // sekunder mellem svar
+    settle: 6,         // sekunders pause i talen
+    grace: 20,         // pusterum efter emneskift
+    minWords: 25,
+    minUtterances: 3,
+    coherence: 16,     // procent
+    newWords: 45,
+    length: "mellem",
+    persona: ""
+  };
+
+  var S = load("dansksvar.settings", DEFAULTS);
+  for (var k in DEFAULTS) { if (S[k] === undefined) S[k] = DEFAULTS[k]; }
+
+  function load(key, fallback) {
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(fallback));
+    } catch (e) { return JSON.parse(JSON.stringify(fallback)); }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* privat vindue */ }
+  }
+
+  /* ========== Dansk tekstbehandling ========== */
+
+  var STOPWORDS = ("og i jeg det at en den til er som på de med han af for ikke der var mig sig men et har om vi min " +
+    "havde ham hun nu over da fra du ud sin dem os op man hans hvor eller hvad skal selv her alle vil blev kunne ind " +
+    "når være dog noget ville jo deres efter ned skulle denne end dette mit også under have dig anden hende mine alt " +
+    "meget sit sine vor mod disse hvis din nogle hos blive mange ad bliver hendes været jer sådan lige kan må så får " +
+    "gør går kom kommer sagde siger synes tror ved vist altså bare egentlig faktisk netop vel nok jamen øh øhm hmm ja " +
+    "nej okay hej tja næh hvordan hvorfor hvornår hvem hvilken hvilket hvilke både samt fordi derfor altid aldrig igen " +
+    "stadig måske gerne godt rigtig helt lidt mere mest mindre andre sammen hele første sidste næste tit ofte vores jeres"
+  ).split(" ");
+  var STOP = {};
+  STOPWORDS.forEach(function (w) { STOP[w] = true; });
+
+  var SUFFIXES = ["ernes", "erne", "ende", "ede", "ens", "ers", "ene", "et", "en", "er", "e", "s"];
+  var VOWELS = "aeiouyæøå";
+
+  function stem(word) {
+    var s = word;
+    for (var i = 0; i < SUFFIXES.length; i++) {
+      var suf = SUFFIXES[i];
+      if (s.length - suf.length >= 4 && s.slice(-suf.length) === suf) { s = s.slice(0, -suf.length); break; }
+    }
+    if (s.length >= 5 && s[s.length - 1] === s[s.length - 2] && VOWELS.indexOf(s[s.length - 1]) === -1) {
+      s = s.slice(0, -1);
+    }
+    return s;
+  }
+
+  function rawTokens(text) {
+    var cleaned = text.toLowerCase().replace(/[^\wæøå\s-]/g, " ").replace(/_/g, " ");
+    return cleaned.split(/\s+/).filter(function (t) { return t.length > 0; });
+  }
+
+  function contentTokens(text) {
+    return rawTokens(text)
+      .filter(function (t) { return t.length >= 3 && !STOP[t] && !/^\d+$/.test(t); })
+      .map(stem)
+      .filter(function (t) { return t.length >= 3; });
+  }
+
+  function frequencies(tokens) {
+    var out = {};
+    tokens.forEach(function (t) { out[t] = (out[t] || 0) + 1; });
+    return out;
+  }
+
+  function cosine(a, b) {
+    var dot = 0, na = 0, nb = 0, key;
+    for (key in a) { na += a[key] * a[key]; if (b[key]) dot += a[key] * b[key]; }
+    for (key in b) { nb += b[key] * b[key]; }
+    if (!dot || !na || !nb) return 0;
+    return dot / (Math.sqrt(na) * Math.sqrt(nb));
+  }
+
+  // Browseren har ingen sprogdetektor. Det her er en simplere port end appens:
+  // andelen af danske funktionsord, plus æ, ø og å som stærkt indicium.
+  function looksDanish(text) {
+    var words = rawTokens(text);
+    if (words.length < 4) return words.length > 0;
+    if (/[æøå]/.test(text.toLowerCase())) return true;
+    var hits = 0;
+    words.forEach(function (w) { if (STOP[w]) hits++; });
+    return hits / words.length >= 0.12;
+  }
+
+  /* ========== Emnesporing: den røde tråd ========== */
+
+  var DECAY = 0.82, SHIFT_THRESHOLD = 0.14, SHIFT_STREAK = 2, SILENCE_TIMEOUT = 300000;
+
+  var topic = null;
+
+  function newTopic(now, withGrace) {
+    return {
+      id: Math.random().toString(36).slice(2),
+      weights: {},
+      utterances: [],
+      sims: [],
+      missStreak: 0,
+      startedAt: now,
+      eligibleAfter: now + (withGrace ? S.grace * 1000 : 0)
+    };
+  }
+
+  function extend(t, utterance, freqs, similarity) {
+    for (var key in t.weights) { t.weights[key] *= DECAY; }
+    for (var term in freqs) { t.weights[term] = (t.weights[term] || 0) + freqs[term]; }
+
+    var keys = Object.keys(t.weights);
+    if (keys.length > 120) {
+      keys.sort(function (a, b) { return t.weights[b] - t.weights[a]; });
+      var trimmed = {};
+      keys.slice(0, 80).forEach(function (key) { trimmed[key] = t.weights[key]; });
+      t.weights = trimmed;
+    }
+
+    t.utterances.push(utterance);
+    t.sims.push(similarity);
+    if (t.utterances.length > 60) { t.utterances.shift(); t.sims.shift(); }
+  }
+
+  function ingest(text) {
+    var now = Date.now();
+    var utterance = { text: text, at: now, words: text.split(/\s+/).filter(Boolean).length };
+    var freqs = frequencies(contentTokens(text));
+    var shifted = false;
+
+    if (!topic || !topic.utterances.length) {
+      topic = newTopic(now, false);
+      extend(topic, utterance, freqs, 0);
+      return { shifted: true };
+    }
+
+    var last = topic.utterances[topic.utterances.length - 1];
+    var similarity = cosine(freqs, topic.weights);
+
+    if (now - last.at > SILENCE_TIMEOUT) {
+      topic = newTopic(now, true);
+      extend(topic, utterance, freqs, 0);
+      return { shifted: true };
+    }
+
+    // Korte indskud — "ja, præcis" — må ikke rive tråden over.
+    if (Object.keys(freqs).length >= 3) {
+      topic.missStreak = similarity < SHIFT_THRESHOLD ? topic.missStreak + 1 : 0;
+    }
+
+    if (topic.missStreak >= SHIFT_STREAK) {
+      // Emnet skiftede ved den forrige ytring — den tages med over.
+      var carry = topic.utterances.slice(-(SHIFT_STREAK - 1));
+      topic = newTopic(now, true);
+      carry.forEach(function (u) { extend(topic, u, frequencies(contentTokens(u.text)), 0); });
+      extend(topic, utterance, freqs, 0);
+      shifted = true;
+    } else {
+      extend(topic, utterance, freqs, similarity);
+    }
+
+    return { shifted: shifted };
+  }
+
+  function coherence() {
+    if (!topic || topic.sims.length < 2) return 0;
+    var scored = topic.sims.slice(1);
+    var total = scored.reduce(function (a, b) { return a + b; }, 0);
+    return total / scored.length;
+  }
+
+  function keywords(limit) {
+    if (!topic) return [];
+    var keys = Object.keys(topic.weights);
+    keys.sort(function (a, b) { return topic.weights[b] - topic.weights[a]; });
+    return keys.slice(0, limit || 8);
+  }
+
+  function wordCount() {
+    if (!topic) return 0;
+    return topic.utterances.reduce(function (sum, u) { return sum + u.words; }, 0);
+  }
+
+  /* ========== Sproget: prompten til modellen ========== */
+
+  var LENGTHS = {
+    kort:   "Hold svaret på én til to sætninger, højst 35 ord. Stramt, men fuldt formuleret.",
+    mellem: "Hold svaret på to til fire sætninger, 40-70 ord. Der er plads til et forbehold og en præcisering.",
+    lang:   "Skriv tre til fem sætninger, 70-110 ord. Fold tanken ud med sideordning, indskud og et velvalgt forbehold."
+  };
+
+  function buildPrompt(utterances, kws, isShift) {
+    var lines = utterances.map(function (u) {
+      var d = new Date(u.at);
+      var hh = String(d.getHours()).padStart(2, "0");
+      var mm = String(d.getMinutes()).padStart(2, "0");
+      var ss = String(d.getSeconds()).padStart(2, "0");
+      return "[" + hh + ":" + mm + ":" + ss + "] " + u.text;
+    }).join("\n");
+
+    var p = "Du lytter med på en samtale mellem andre mennesker og skriver ét enkelt, skriftligt svar, " +
+      "som brugeren kan læse på sin skærm. Brugeren siger ikke noget selv og trykker ikke på noget — " +
+      "dit svar er hele hans eller hendes replik.\n\n" +
+
+      "SPROG\n" +
+      "- Skriv udelukkende på dansk. Moderne, talt rigsdansk, som det faktisk lyder i Danmark.\n" +
+      "- Ram den danske sætningsrytme: inversion efter ledsætning, sætningsadverbierne på deres rette " +
+      "plads foran hovedverbet i ledsætninger, og de små danske partikler — jo, nu, da, vel, nok, altså, " +
+      "egentlig, netop — dér hvor de gør sætningen dansk frem for blot korrekt.\n" +
+      "- Ingen oversættelsesdansk. Ingen anglicismer, ingen engelsk ordstilling, intet kancellisprog og " +
+      "ingen stive substantiveringer.\n" +
+      "- Brug gerne et fast dansk udtryk, når det falder af sig selv — \"der er noget om snakken\", " +
+      "\"det ligger lige for\", \"det holder ikke vand\" — men ét ad gangen, og aldrig som pynt.\n" +
+      "- Formuler komplekst, hvor sagen er kompleks: hypotakse, indskud, præcise skel, velplacerede " +
+      "forbehold. Formuler til gengæld enkelt, hvor sagen er enkel.\n\n" +
+
+      "INDHOLD\n" +
+      "- Find den røde tråd i det, der bliver sagt, og svar på den — ikke på den sidste løsrevne sætning.\n" +
+      "- Sig noget, der bringer samtalen videre: en holdning, en skelnen, et spørgsmål der rammer det ømme " +
+      "punkt, eller en erfaring der passer på sagen. Ikke et referat af det, de lige har sagt.\n" +
+      "- Transskriptionen er lavet af en maskine og er stedvis forkert. Læs efter meningen, og gætter du på " +
+      "et ord, så byg ikke hele svaret på det.\n" +
+      "- Er materialet for tyndt eller for rodet til, at der er en tråd at svare på, så svar med ordet " +
+      "INTET og ikke andet.\n" +
+      "- Skriv aldrig om, at du er en model, at du lytter med, eller at teksten kommer fra en transskription.\n\n" +
+
+      LENGTHS[S.length] + "\n";
+
+    if (S.persona.trim()) {
+      p += "\nOM DEN, DU SKRIVER PÅ VEGNE AF\n" + S.persona.trim() + "\n";
+    }
+
+    p += "\nSVARFORMAT\nSvar med præcis to linjer og intet andet:\n" +
+      "EMNE: en overskrift på 2-5 ord, der navngiver emnet\n" +
+      "SVAR: selve svaret i almindelig, ubrudt tekst\n" +
+      "Ingen markdown, ingen anførselstegn om svaret, ingen indledning, ingen forklaring.\n\n" +
+
+      "Uddrag af samtalen, ældste først:\n\n" + lines;
+
+    if (kws.length) p += "\n\nOrd der går igen: " + kws.slice(0, 8).join(", ") + ".";
+    if (isShift) p += "\n\nSamtalen er lige drejet over på noget nyt. Svar på det nye, ikke på det forrige.";
+    p += "\n\nSkriv nu svaret i det aftalte format.";
+    return p;
+  }
+
+  function parseReply(raw) {
+    var trimmed = (raw || "").trim();
+    if (!trimmed || trimmed.toUpperCase() === "INTET") return null;
+
+    var topicLine = null, bodyParts = [];
+    trimmed.split("\n").forEach(function (line) {
+      var text = line.trim();
+      if (/^EMNE:/i.test(text)) { topicLine = text.replace(/^EMNE:/i, "").trim(); }
+      else if (/^SVAR:/i.test(text)) { bodyParts.push(text.replace(/^SVAR:/i, "").trim()); }
+      else if (text) { bodyParts.push(text); }
+    });
+
+    var body = bodyParts.join(" ").replace(/\s{2,}/g, " ").trim().replace(/^["«„“]|["»”]$/g, "");
+    if (body.length < 3 || body.toUpperCase() === "INTET") return null;
+    return { topic: topicLine || null, body: body };
+  }
+
+  /* ========== Historik ========== */
+
+  var archiveList = load("dansksvar.history", []);
+  var current = null;
+
+  function archive(reply) {
+    archiveList.unshift(reply);
+    if (archiveList.length > 200) archiveList.length = 200;
+    save("dansksvar.history", archiveList);
+    renderHistory();
+  }
+
+  /* ========== Modellen ========== */
+
+  var sampler = null;
+
+  async function composeReply(utterances, kws, isShift) {
+    if (!sampler) throw new Error("no-sampler");
+    var out = await sampler(buildPrompt(utterances, kws, isShift), { modelTier: "complex", cache: false });
+    return parseReply(out && out.text);
+  }
+
+  /* ========== Talegenkendelse ========== */
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recognition = null, listening = false, wakeLock = null;
+  var heard = 0, accepted = 0;
+  var lastReplyAt = 0, lastTopicId = null, wordsAtLastReply = 0, composing = false, pendingShift = false;
+
+  function startListening() {
+    if (current && current.example) { current = null; renderReply(false); }
+    if (!SR) {
+      showAlert("Denne browser har ikke talegenkendelse. På iPhone skal du bruge Safari — " +
+        "Chrome og Firefox på iOS giver ikke adgang til den.");
+      return;
+    }
+
+    recognition = new SR();
+    recognition.lang = "da-DK";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = function (event) {
+      var interim = "";
+      for (var i = event.resultIndex; i < event.results.length; i++) {
+        var result = event.results[i];
+        var text = (result[0] && result[0].transcript || "").trim();
+        if (!text) continue;
+        if (result.isFinal) { handleUtterance(text); } else { interim = text; }
+      }
+      if (interim) el.ticker.textContent = interim;
+    };
+
+    recognition.onerror = function (event) {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        showAlert("Safari fik ikke lov til at bruge mikrofonen. Tryk på «aA» i adresselinjen → " +
+          "Indstillinger for websted → Mikrofon → Tillad, og start igen.");
+        stopListening();
+      } else if (event.error === "audio-capture") {
+        showAlert("Mikrofonen kunne ikke åbnes. Luk andre apps, der bruger den, og prøv igen.");
+        stopListening();
+      }
+      // «no-speech» og «aborted» er dagligdag — onend starter bare forfra.
+    };
+
+    // Safari standser genkendelsen efter hver pause. Den startes bare igen.
+    recognition.onend = function () {
+      if (listening) { try { recognition.start(); } catch (e) { setTimeout(function () {
+        if (listening) { try { recognition.start(); } catch (e2) { /* opgiver denne runde */ } }
+      }, 320); } }
+    };
+
+    try { recognition.start(); } catch (e) { /* allerede i gang */ }
+
+    listening = true;
+    heard = 0; accepted = 0; topic = null; pendingShift = false;
+    lastReplyAt = 0; lastTopicId = null; wordsAtLastReply = 0;
+    hideAlert();
+    requestWakeLock();
+    render();
+  }
+
+  function stopListening() {
+    listening = false;
+    if (recognition) { try { recognition.stop(); } catch (e) { /* allerede standset */ } }
+    recognition = null;
+    releaseWakeLock();
+    el.ticker.textContent = "—";
+    topic = null;
+    render();
+  }
+
+  function handleUtterance(text) {
+    heard++;
+    if (!looksDanish(text)) { el.ticker.textContent = "—"; return; }
+    accepted++;
+    el.ticker.textContent = text;
+    var outcome = ingest(text);
+    if (outcome.shifted) pendingShift = true;
+    render();
+  }
+
+  // Holder skærmen vågen, så lytningen ikke standser af sig selv.
+  async function requestWakeLock() {
+    try {
+      if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
+    } catch (e) { wakeLock = null; }
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { try { wakeLock.release(); } catch (e) { /* allerede sluppet */ } wakeLock = null; }
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && listening && !wakeLock) requestWakeLock();
+  });
+
+  /* ========== De seks betingelser ========== */
+
+  setInterval(function () {
+    if (!listening || composing || !topic || !topic.utterances.length) { setCountdown(""); return; }
+
+    var now = Date.now();
+    var last = topic.utterances[topic.utterances.length - 1];
+
+    // 1) Karensperioden efter et emneskift.
+    if (now < topic.eligibleAfter) {
+      setCountdown("nyt emne om " + Math.ceil((topic.eligibleAfter - now) / 1000) + " s");
+      return;
+    }
+    // 2) Der skal være en pause, så der ikke svares midt i en sætning.
+    if (now - last.at < S.settle * 1000) { setCountdown(""); return; }
+    // 3) Nok ytringer og nok ord til, at der er et emne.
+    if (topic.utterances.length < S.minUtterances || wordCount() < S.minWords) { setCountdown(""); return; }
+    // 4) Der skal være en rød tråd.
+    if (coherence() * 100 < S.coherence) { setCountdown(""); return; }
+    // 5) Der skal gå tid mellem svarene.
+    if (lastReplyAt) {
+      var since = (now - lastReplyAt) / 1000;
+      if (since < S.interval) { setCountdown("næste om " + Math.ceil(S.interval - since) + " s"); return; }
+    }
+    // 6) Samme emne som sidst kræver, at der er sagt noget nyt.
+    if (topic.id === lastTopicId && wordCount() - wordsAtLastReply < S.newWords) { setCountdown(""); return; }
+
+    setCountdown("");
+    runCompose();
+  }, 1000);
+
+  async function runCompose() {
+    composing = true;
+    var snapshot = topic;
+    var utterances = snapshot.utterances.slice(-25);
+    var kws = keywords(8);
+    var shift = pendingShift;
+    render();
+
+    try {
+      var parsed = await composeReply(utterances, kws, shift);
+      if (parsed) {
+        publishReply({
+          id: Math.random().toString(36).slice(2),
+          topic: parsed.topic || (kws.slice(0, 3).join(", ") || "Samtale"),
+          body: parsed.body,
+          at: Date.now()
+        });
+        pendingShift = false;
+      }
+      // Modellen svarede INTET: ingen tråd værd at svare på endnu. Vent på mere.
+      lastTopicId = snapshot.id;
+      wordsAtLastReply = wordCount();
+    } catch (e) {
+      if (e && e.code === "not_granted") {
+        showAlert("Du har afvist, at siden må spørge Claude, så der kan ikke formuleres svar. " +
+          "Genindlæs siden for at blive spurgt igen.");
+        sampler = null;
+      } else if (e && e.code === "rate_limited") {
+        showAlert("For mange kald lige nu. Appen holder en pause og prøver igen ved næste emne.");
+      } else if (!(e && e.message === "no-sampler")) {
+        showAlert("Svaret kunne ikke hentes: " + ((e && e.message) || "ukendt fejl") + ".");
+      }
+      lastReplyAt = Date.now(); // Undgå at hamre løs på et kald, der fejler.
+    } finally {
+      composing = false;
+      render();
+    }
+  }
+
+  function publishReply(reply) {
+    if (current) archive(current);   // Det forrige gemmes, inden det forsvinder.
+    current = reply;
+    lastReplyAt = reply.at;
+    hideAlert();
+    renderReply(true);
+  }
+
+  /* ========== Visning ========== */
+
+  var el = {
+    dot: document.getElementById("dot"),
+    statusText: document.getElementById("statusText"),
+    countdown: document.getElementById("countdown"),
+    threadTopic: document.getElementById("threadTopic"),
+    threadPct: document.getElementById("threadPct"),
+    threadFill: document.getElementById("threadFill"),
+    threadMark: document.getElementById("threadMark"),
+    threadMeta: document.getElementById("threadMeta"),
+    toggle: document.getElementById("toggle"),
+    ticker: document.getElementById("ticker"),
+    replySlot: document.getElementById("replySlot"),
+    histBody: document.getElementById("histBody"),
+    histCount: document.getElementById("histCount"),
+    alert: document.getElementById("alert")
+  };
+
+  function showAlert(message) { el.alert.textContent = message; el.alert.hidden = false; }
+  function hideAlert() { el.alert.hidden = true; }
+  function setCountdown(text) { el.countdown.textContent = text; }
+
+  function clockOf(ms) {
+    var d = new Date(ms);
+    return String(d.getHours()).padStart(2, "0") + "." + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function render() {
+    el.dot.className = "dot" + (composing ? " busy" : listening ? " live" : "");
+    el.statusText.textContent = composing ? "Formulerer svar"
+      : listening ? "Lytter" : "Slukket";
+    el.toggle.textContent = listening ? "Stop lytning" : "Start lytning";
+    el.toggle.className = "btn" + (listening ? " stop" : "");
+
+    var coh = coherence();
+    var pct = Math.round(coh * 100);
+    var kws = keywords(3);
+
+    if (topic && topic.utterances.length) {
+      el.threadTopic.textContent = kws.length ? kws.join(", ") : "Samler op";
+      el.threadTopic.className = "thread-topic";
+      el.threadPct.textContent = pct + " %";
+      el.threadMeta.textContent = topic.utterances.length + " ytringer · " + wordCount() + " ord · " +
+        accepted + " af " + heard + " på dansk";
+    } else {
+      el.threadTopic.textContent = listening ? "Venter på dansk tale" : "Ingen tråd endnu";
+      el.threadTopic.className = "thread-topic empty";
+      el.threadPct.textContent = "";
+      el.threadMeta.textContent = "Mærket viser, hvor stram tråden skal være, før der svares.";
+    }
+
+    // Tråden måles mod dobbelt tærskel, så mærket lander midtvejs på skalaen.
+    var scale = Math.max(S.coherence * 2, 10);
+    el.threadFill.style.width = Math.min(100, (pct / scale) * 100) + "%";
+    el.threadMark.style.left = Math.min(100, (S.coherence / scale) * 100) + "%";
+  }
+
+  function renderReply(fresh) {
+    if (!current) { el.replySlot.innerHTML = ""; return; }
+    el.replySlot.innerHTML =
+      '<article class="reply' + (fresh ? " fresh" : "") + '">' +
+        '<div class="reply-head">' +
+          '<span class="reply-topic"></span>' +
+          '<span class="reply-time"></span>' +
+        '</div>' +
+        '<p class="reply-body"></p>' +
+        '<div class="reply-foot">' +
+          '<span class="chip">På skærmen nu</span>' +
+          '<button class="ghost" type="button">Læg i historik</button>' +
+        '</div>' +
+      '</article>';
+
+    el.replySlot.querySelector(".reply-topic").textContent = current.topic;
+    el.replySlot.querySelector(".reply-time").textContent = clockOf(current.at);
+    el.replySlot.querySelector(".reply-body").textContent = current.body;
+    el.replySlot.querySelector(".ghost").addEventListener("click", function () {
+      archive(current); current = null; renderReply(false);
+    });
+  }
+
+  function renderHistory() {
+    el.histCount.textContent = archiveList.length + " svar";
+    if (!archiveList.length) {
+      el.histBody.innerHTML = '<p class="empty-note">Her samler de svar sig, som har været vist.</p>';
+      return;
+    }
+    el.histBody.innerHTML = "";
+    archiveList.slice(0, 40).forEach(function (reply) {
+      var item = document.createElement("div");
+      item.className = "hist-item";
+
+      var head = document.createElement("div");
+      head.className = "hist-head";
+      var t = document.createElement("span");
+      t.className = "hist-topic"; t.textContent = reply.topic;
+      var time = document.createElement("span");
+      time.className = "hist-time"; time.textContent = clockOf(reply.at);
+      head.appendChild(t); head.appendChild(time);
+
+      var body = document.createElement("p");
+      body.className = "hist-body"; body.textContent = reply.body;
+
+      item.appendChild(head); item.appendChild(body);
+      el.histBody.appendChild(item);
+    });
+  }
+
+  /* ========== Indstillingernes betjening ========== */
+
+  function bindRange(id, valueId, key, format) {
+    var input = document.getElementById(id), out = document.getElementById(valueId);
+    input.value = S[key];
+    out.textContent = format(S[key]);
+    input.addEventListener("input", function () {
+      S[key] = Number(input.value);
+      out.textContent = format(S[key]);
+      save("dansksvar.settings", S);
+      render();
+    });
+  }
+
+  bindRange("sInterval", "vInterval", "interval", function (v) { return v + " sek."; });
+  bindRange("sSettle", "vSettle", "settle", function (v) { return v + " sek."; });
+  bindRange("sGrace", "vGrace", "grace", function (v) { return v + " sek."; });
+  bindRange("sWords", "vWords", "minWords", function (v) { return v + " ord"; });
+  bindRange("sCoh", "vCoh", "coherence", function (v) { return v + " %"; });
+
+  var lengthSelect = document.getElementById("sLength");
+  lengthSelect.value = S.length;
+  lengthSelect.addEventListener("change", function () {
+    S.length = lengthSelect.value; save("dansksvar.settings", S);
+  });
+
+  var personaBox = document.getElementById("sPersona");
+  personaBox.value = S.persona;
+  personaBox.addEventListener("input", function () {
+    S.persona = personaBox.value; save("dansksvar.settings", S);
+  });
+
+  document.getElementById("clearHist").addEventListener("click", function () {
+    archiveList = []; save("dansksvar.history", archiveList); renderHistory();
+  });
+
+  el.toggle.addEventListener("click", function () {
+    if (listening) { stopListening(); } else { startListening(); }
+  });
+
+  /* ========== Første billede ========== */
+
+  // Siden åbner med et eksempel, så det er tydeligt, hvad den gør. Det ryger,
+  // så snart der lyttes rigtigt.
+  current = {
+    id: "eksempel",
+    topic: "Sommerhus i uge 29",
+    body: "Hvis I nu deler ugen, så er den ged jo barberet — men det løser ikke det egentlige, " +
+      "nemlig at I to har vidt forskellige forestillinger om, hvad en ferie overhovedet skal bruges til. " +
+      "Den snak kommer I til at tage på et tidspunkt, og den bliver nemmere nu end i juli.",
+    at: Date.now(),
+    example: true
+  };
+  renderReply(false);
+  var chip = el.replySlot.querySelector(".chip");
+  if (chip) { chip.textContent = "Eksempel"; chip.className = "chip example"; }
+  var ghost = el.replySlot.querySelector(".ghost");
+  if (ghost) ghost.remove();
+
+  renderHistory();
+  render();
+
+  if (!SR) {
+    showAlert("Denne browser har ikke talegenkendelse. På iPhone skal du åbne siden i Safari — " +
+      "Chrome og Firefox på iOS får ikke adgang til den.");
+  }
+
+  // Sprogmodellen nås gennem artefaktens egen kanal, så der ikke skal en
+  // API-nøgle ind i browseren. Svaret kommer først et øjeblik efter indlæsning.
+  (async function () {
+    try {
+      sampler = (window.claude && window.claude.use) ? await window.claude.use("sample") : null;
+    } catch (e) { sampler = null; }
+    if (!sampler) {
+      showAlert("Siden kan ikke nå sprogmodellen i denne visning, så den kan ikke formulere svar. " +
+        "Alt det andet — lytning, dansk-genkendelse og den røde tråd — virker.");
+    }
+  })();
+})();
+</script>
