@@ -78,6 +78,18 @@ Vil du have lyden til aldrig at forlade telefonen, skal dansk ligge lokalt:
 telefonen hente sproget. Derefter kan du slå **Kun lokal talegenkendelse** til
 inde i appen. Kan din iPhone ikke køre dansk lokalt, er kontakten grå.
 
+## Byggekontrol på GitHub
+
+Hver gang der skubbes til `ios/DanskSvar/`, bygger
+[`.github/workflows/byg-ios.yml`](../../.github/workflows/byg-ios.yml) appen på
+en macOS-maskine og lægger en usigneret `.ipa` frem under fanen **Actions**.
+
+Den fil kan ikke installeres direkte — den er usigneret. Den er der af to
+grunde: den beviser, at koden oversætter, og den kan sideloades med AltStore
+eller Sideloadly, hvis du en dag står uden en Mac.
+
+Har du en Mac, er det ⌘R i Xcode, der gælder. Byggejobbet er kun en kontrol.
+
 ## Sådan hænger koden sammen
 
 | Fil | Ansvar |
