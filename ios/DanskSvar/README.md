@@ -9,7 +9,8 @@ Xcode-projektet og bygger den over på din iPhone.
 - En **iPhone med iOS 17** eller nyere
 - **XcodeGen** (`brew install xcodegen`) — laver `.xcodeproj` ud fra `project.yml`
 - En **Anthropic API-nøgle** fra <https://console.anthropic.com> (kan tilføjes
-  senere inde i appen)
+  senere inde i appen). Et Claude Pro-abonnement kan **ikke** bruges her — se
+  nedenfor.
 - En Apple-ID. Et gratis ét er nok; se om signering længere nede.
 
 ## Byg
@@ -51,6 +52,18 @@ ikke sendes videre til andre.
 1. Sig ja til **mikrofon**, **talegenkendelse** og **notifikationer**.
 2. Åbn **Indstillinger** i appen og indsæt din Anthropic-nøgle. Den lægges i
    telefonens nøglering.
+
+### Hvorfor Claude Pro ikke kan bruges her
+
+Et Claude Pro-abonnement gælder claude.ai og Claude Code, ikke API'et. En app,
+du selv bygger, kan ikke logge ind på abonnementet — den skal have sin egen
+API-nøgle, som afregnes særskilt efter forbrug. Det er to adskilte ting hos
+Anthropic, og der er ingen bro imellem dem.
+
+Vil du helt undgå en API-nøgle, er det [webudgaven](../../web/README.md), du skal
+bruge. Den kører som artefakt på claude.ai og spørger Claude gennem din egen
+konto — men den kan til gengæld ikke lægge svar på låseskærmen og kan kun lytte,
+mens siden er fremme.
 3. Tryk **Start lytning**.
 
 Vil du have svarene til at bryde igennem Fokus og lyse låseskærmen op, så lad
